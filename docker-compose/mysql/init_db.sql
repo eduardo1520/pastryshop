@@ -1,12 +1,46 @@
-USE pastryshop;
+/*USE pastryshop;
 
-DROP TABLE IF EXISTS `places`;
+CREATE TABLE IF NOT EXISTS client (
+	client_id integer not null auto_increment primary key,
+	name varchar(40) not null,
+	email varchar(20) not null,
+	date_birth char(10) not null,
+	address varchar(100) not null,
+	complement varchar(100) not null,
+	neighborhood varchar(40) not null,
+	cep char(9) not null,
+	date_entry date not null
+);
 
-CREATE TABLE `places` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `visited` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS product (
+	product_id integer not null auto_increment primary key,
+	name varchar(40) not null,
+	price  decimal(12.2) not null,
+	photo varchar(50) not null
+);
+CREATE TABLE IF NOT EXISTS purchase (
+	purchase_id integer not null auto_increment primary key,
+	client_id integer,
+	product_id integer,
+	foreign key (client_id) references  client (client_id),
+	foreign key (product_id) references  product (product_id)
+);
 
-INSERT INTO `places` (name, visited) VALUES ('Berlin',0),('Budapest',0),('Cincinnati',1),('Denver',0),('Helsinki',0),('Lisbon',0),('Moscow',1),('Nairobi',0),('Oslo',1),('Rio',0),('Tokyo',0);
+INSERT INTO client
+  SET name = 'teste',
+      email = 'teste@gmail.com',
+      date_birth = '1990-01-10',
+      address = 'endereco',
+      complement = 'complemento',
+      neighborhood = 'bairro',
+      cep = '00000-000',
+      date_entry = '2023-07-06';
+
+INSERT INTO product
+  SET name = 'mesa',
+      price = '1000.00',
+      photo = 'foto_mesa.png';
+
+INSERT INTO purchase
+  SET client_id = 1,
+      product_id = 1;*/
