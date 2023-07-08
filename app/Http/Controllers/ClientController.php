@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreClient;
 use App\Models\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
 {
@@ -25,10 +25,8 @@ class ClientController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreClient $request)
     {
-        $this->clientValidation($request);
-
         $request['date_entry'] = $request['date_entry'] ?? $this->addDateNow();
 
         $client = new Client($request->all());
@@ -43,24 +41,6 @@ class ClientController extends Controller
 
     private function addDateNow(){
         return date('Y-m-d');
-    }
-
-    private function clientValidation(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|max:40',
-            'email' => 'required|min:14|max:50|unique:clients',
-            'date_birth' => 'required|min:10|date_format:Y-m-d',
-            'address' =>  'required|min:10|max:100',
-            'neighborhood' => 'required|min:3|max:40',
-            'cep' => 'required|min:9',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'validation error',
-                'message'   => $validator->errors(),
-            ], 422);
-        }
     }
 
     /**
@@ -91,7 +71,18 @@ class ClientController extends Controller
      */
     public function update(Request $request, $id)
     {
-        dd('Atualiza um cliente em específico.');
+        $client = Client::find($id);
+
+        if(!$client) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $client->fill($request->all());
+        $client->save();
+
+        return response()->json($client);
     }
 
     /**
@@ -102,6 +93,14 @@ class ClientController extends Controller
      */
     public function destroy($id)
     {
-        dd('Remove um cliente em específico.');
+        $client = Client::find($id);
+
+        if(!$client) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $client->delete();
     }
 }
