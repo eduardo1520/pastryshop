@@ -1,7 +1,7 @@
 # Pastry Shop API - Laravel Demo App
 ## Your Welcome
 
-![Alt text](image-1.png)
+![Alt text](pastel-de-carne.jpg)
 ## Sejam bem vindos a api Patry Shop, a seguir iremos fazer um passo a passo de como efetuar a instalação no seu ambiente local, para rodar a aplicação da API.
 
 ### Nesta aplicação estaremos utilizando as seguintes ferramentas:
