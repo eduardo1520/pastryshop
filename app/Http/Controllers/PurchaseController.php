@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePurchase;
 use App\Models\Purchase;
 use Illuminate\Http\Request;
 
@@ -25,24 +26,34 @@ class PurchaseController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePurchase $request)
     {
-        //
+        try {
+            $registerIds = array_map(function($purchase) {
+                return Purchase::insertGetId($purchase);
+            }, $request['purchases']);
+
+            $purchases = Purchase::select([
+                'purchases.id', 'c.name as client', 'p.name as product', 'p.price'
+            ])
+            ->join('clients as c', 'c.id', '=', 'purchases.client_id')
+            ->join('products as p', 'p.id', '=', 'purchases.product_id')
+            ->whereIn('purchases.id', $registerIds)->get();
+
+            if($purchases) {
+                return response()->json([
+                    "message" => "Purchase created successfully",
+                    "data" => $purchases
+                ], 201);
+            }
+        } catch (\Throwable $th) {
+            dd(["Error when trying to register the purchase!", $th]);
+        }
     }
 
     /**
