@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreClient;
-use App\Models\Client;
+use App\Repositories\ClientRepository;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -13,9 +13,9 @@ class ClientController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(ClientRepository $repository)
     {
-        $clients = Client::get();
+        $clients = $repository->findAll();
         return response()->json($clients);
     }
 
@@ -25,13 +25,13 @@ class ClientController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreClient $request)
+    public function store(ClientRepository $repository, StoreClient $request)
     {
         $request['date_entry'] = $request['date_entry'] ?? $this->addDateNow();
 
-        $client = new Client($request->all());
+        $client = $repository->save($request->all());
 
-        if($client->save()) {
+        if($client) {
             return response()->json([
                 "message" => "Client created successfully",
                 "data" => $client
@@ -49,9 +49,9 @@ class ClientController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(ClientRepository $repository, $id)
     {
-        $client = Client::find($id);
+        $client = $repository->find($id);
 
         if(!$client) {
             return response()->json([
@@ -69,18 +69,15 @@ class ClientController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(ClientRepository $repository, Request $request, $id)
     {
-        $client = Client::find($id);
+        $client = $repository->update($request->all(), $id);
 
         if(!$client) {
             return response()->json([
                 'message'   => 'Record not found',
             ], 404);
         }
-
-        $client->fill($request->all());
-        $client->save();
 
         return response()->json($client);
     }
@@ -91,16 +88,14 @@ class ClientController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(ClientRepository $repository, $id)
     {
-        $client = Client::find($id);
+        $client = $repository->delete($id);
 
         if(!$client) {
             return response()->json([
                 'message'   => 'Record not found',
             ], 404);
         }
-
-        $client->delete();
     }
 }
