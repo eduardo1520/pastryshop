@@ -28,7 +28,7 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
-      - ./docker-compose/mysql:/var/lib/mysql:rw
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
     networks:
       - pastryshop
 

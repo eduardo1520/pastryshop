@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Purchase;
 use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
@@ -13,7 +14,14 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        //
+        $purchases = Purchase::select([
+            'purchases.id', 'c.name as client', 'p.name as product', 'p.price'
+        ])
+        ->join('clients as c', 'c.id', '=', 'purchases.client_id')
+        ->join('products as p', 'p.id', '=', 'purchases.product_id')
+        ->get();
+
+        return response()->json($purchases);
     }
 
     /**
@@ -45,18 +53,21 @@ class PurchaseController extends Controller
      */
     public function show($id)
     {
-        //
-    }
+        $purchase = Purchase::select([
+            'purchases.id', 'c.name as client', 'p.name as product', 'p.price'
+        ])
+        ->join('clients as c', 'c.id', '=', 'purchases.client_id')
+        ->join('products as p', 'p.id', '=', 'purchases.product_id')
+        ->where('purchases.id', '=', $id)
+        ->get();
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        if(!$purchase) {
+            return response()->json([
+                'message' => 'Record not found',
+            ], 404);
+        }
+
+        return response()->json($purchase);
     }
 
     /**
@@ -68,7 +79,18 @@ class PurchaseController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $purchase = Purchase::find($id);
+
+        if(!$purchase) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $purchase->fill($request->all());
+        $purchase->save();
+
+        return response()->json($purchase);
     }
 
     /**
@@ -79,6 +101,14 @@ class PurchaseController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $purchase = Purchase::find($id);
+
+        if(!$purchase) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $purchase->delete();
     }
 }
