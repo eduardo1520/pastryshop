@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProduct;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -13,17 +15,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $products = Product::get();
+        return response()->json($products);
     }
 
     /**
@@ -32,9 +25,21 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreProduct $request)
     {
-        //
+        if ($request->hasFile('photo')) {
+            $product = $request->file('photo')->store('products');
+            $request['photo'] = $product;
+        }
+
+        $product = new Product($request->all());
+
+        if($product->save()) {
+            return response()->json([
+                "message" => "Product created successfully",
+                "data" => $product
+            ], 201);
+        }
     }
 
     /**
@@ -45,18 +50,15 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        //
-    }
+        $product = Product::find($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        if(!$product) {
+            return response()->json([
+                'message' => 'Record not found',
+            ], 404);
+        }
+
+        return response()->json($product);
     }
 
     /**
@@ -68,7 +70,18 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $product = Product::find($id);
+
+        if(!$product) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $product->fill($request->all());
+        $product->save();
+
+        return response()->json($product);
     }
 
     /**
@@ -79,6 +92,14 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = Product::find($id);
+
+        if(!$product) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $product->delete();
     }
 }
