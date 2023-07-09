@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProduct;
-use App\Models\Product;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -13,9 +13,9 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(ProductRepository $repository)
     {
-        $products = Product::get();
+        $products = $repository->findAll();
         return response()->json($products);
     }
 
@@ -25,16 +25,16 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreProduct $request)
+    public function store(ProductRepository $repository, StoreProduct $request)
     {
         if ($request->hasFile('photo')) {
             $product = $request->file('photo')->store('products');
             $request['photo'] = $product;
         }
 
-        $product = new Product($request->all());
+        $product = $repository->save($request->all());
 
-        if($product->save()) {
+        if($product) {
             return response()->json([
                 "message" => "Product created successfully",
                 "data" => $product
@@ -48,9 +48,9 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(ProductRepository $repository, $id)
     {
-        $product = Product::find($id);
+        $product = $repository->find($id);
 
         if(!$product) {
             return response()->json([
@@ -68,18 +68,15 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(ProductRepository $repository, Request $request, $id)
     {
-        $product = Product::find($id);
+        $product = $repository->update($request->all(), $id);
 
         if(!$product) {
             return response()->json([
                 'message'   => 'Record not found',
             ], 404);
         }
-
-        $product->fill($request->all());
-        $product->save();
 
         return response()->json($product);
     }
@@ -90,16 +87,14 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(ProductRepository $repository, $id)
     {
-        $product = Product::find($id);
+        $product = $repository->delete($id);
 
         if(!$product) {
             return response()->json([
                 'message'   => 'Record not found',
             ], 404);
         }
-
-        $product->delete();
     }
 }
