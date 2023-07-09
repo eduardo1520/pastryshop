@@ -47,7 +47,7 @@ Na raiz do projeto execute o seguinte comando para baixar e subir os container d
     docker-compose exec app php artisan db:seed
 
 7. Para podermos testar a nossa API podemos usar o Insomnia ou PostMan como ferramenta para acessarmos nosso endpoints.
-- Na raiz do projeto encontramos as collections para efetuarmos os testes nos endpoints.
+> - Na raiz do projeto encontramos as collections para efetuarmos os testes nos endpoints.
 
 8. Para pararmos a nossa API podemos executar o seguinte comando.
 >
