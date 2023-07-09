@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePurchase;
 use App\Models\Purchase;
+use App\Repositories\PurchaseRepository;
 use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
@@ -13,15 +14,9 @@ class PurchaseController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(PurchaseRepository $repository)
     {
-        $purchases = Purchase::select([
-            'purchases.id', 'c.name as client', 'p.name as product', 'p.price'
-        ])
-        ->join('clients as c', 'c.id', '=', 'purchases.client_id')
-        ->join('products as p', 'p.id', '=', 'purchases.product_id')
-        ->get();
-
+        $purchases = $repository->findAll();
         return response()->json($purchases);
     }
 
@@ -31,20 +26,10 @@ class PurchaseController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StorePurchase $request)
+    public function store(PurchaseRepository $repository, StorePurchase $request)
     {
         try {
-            $registerIds = array_map(function($purchase) {
-                return Purchase::insertGetId($purchase);
-            }, $request['purchases']);
-
-            $purchases = Purchase::select([
-                'purchases.id', 'c.name as client', 'p.name as product', 'p.price'
-            ])
-            ->join('clients as c', 'c.id', '=', 'purchases.client_id')
-            ->join('products as p', 'p.id', '=', 'purchases.product_id')
-            ->whereIn('purchases.id', $registerIds)->get();
-
+            $purchases = $repository->save($request);
             if($purchases) {
                 return response()->json([
                     "message" => "Purchase created successfully",
@@ -62,16 +47,9 @@ class PurchaseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(PurchaseRepository $repository, $id)
     {
-        $purchase = Purchase::select([
-            'purchases.id', 'c.name as client', 'p.name as product', 'p.price'
-        ])
-        ->join('clients as c', 'c.id', '=', 'purchases.client_id')
-        ->join('products as p', 'p.id', '=', 'purchases.product_id')
-        ->where('purchases.id', '=', $id)
-        ->get();
-
+        $purchase = $repository->find($id);
         if(!$purchase) {
             return response()->json([
                 'message' => 'Record not found',
@@ -88,18 +66,14 @@ class PurchaseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(PurchaseRepository $repository, Request $request, $id)
     {
-        $purchase = Purchase::find($id);
-
+        $purchase = $repository->update($request->all(), $id);
         if(!$purchase) {
             return response()->json([
                 'message'   => 'Record not found',
             ], 404);
         }
-
-        $purchase->fill($request->all());
-        $purchase->save();
 
         return response()->json($purchase);
     }
@@ -110,16 +84,13 @@ class PurchaseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(PurchaseRepository $repository, $id)
     {
-        $purchase = Purchase::find($id);
-
+        $purchase = $repository->delete($id);
         if(!$purchase) {
             return response()->json([
                 'message'   => 'Record not found',
             ], 404);
         }
-
-        $purchase->delete();
     }
 }
